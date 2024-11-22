@@ -19,12 +19,11 @@
     "@midday/supabase": "workspace:*",
     "@trigger.dev/react": "3.1.0",
     "@trigger.dev/resend": "3.1.0",
-    "@trigger.dev/sdk": "^3.1.0",
     "@trigger.dev/supabase": "3.1.0",
     "@zip.js/zip.js": "2.7.52",
     "nanoid": "^5.0.8"
   },
   "devDependencies": {
-    "@trigger.dev/build": "^3.1.0"
+    "@trigger.dev/build": "^3.2.1"
   }
 }

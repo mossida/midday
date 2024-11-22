@@ -2,15 +2,10 @@
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProviderClient } from "@/locales/client";
-import { isDesktopApp } from "@todesktop/client-core/platform/todesktop";
 import { TriggerProvider } from "@trigger.dev/react";
 import type { ReactNode } from "react";
-
-// We need to import it here because this is the first
-// client component
-if (isDesktopApp()) {
-  require("@/desktop/main");
-}
+import { useState } from "react";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 type ProviderProps = {
   locale: string;
@@ -18,21 +13,25 @@ type ProviderProps = {
 };
 
 export function Providers({ locale, children }: ProviderProps) {
+  const [queryClient] = useState(() => new QueryClient());
+
   return (
-    <I18nProviderClient locale={locale}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <TriggerProvider
-          publicApiKey={process.env.NEXT_PUBLIC_TRIGGER_API_KEY!}
-          apiUrl={process.env.NEXT_PUBLIC_TRIGGER_API_URL}
+    <QueryClientProvider client={queryClient}>
+      <I18nProviderClient locale={locale}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
         >
-          {children}
-        </TriggerProvider>
-      </ThemeProvider>
-    </I18nProviderClient>
+          <TriggerProvider
+            publicApiKey={process.env.NEXT_PUBLIC_TRIGGER_API_KEY!}
+            apiUrl={process.env.NEXT_PUBLIC_TRIGGER_API_URL}
+          >
+            {children}
+          </TriggerProvider>
+        </ThemeProvider>
+      </I18nProviderClient>
+    </QueryClientProvider>
   );
 }

@@ -1,12 +1,6 @@
 import { AppleSignIn } from "@/components/apple-sign-in";
-import { ConsentBanner } from "@/components/consent-banner";
-import { DesktopCommandMenuSignIn } from "@/components/desktop-command-menu-sign-in";
-import { GithubSignIn } from "@/components/github-sign-in";
 import { GoogleSignIn } from "@/components/google-sign-in";
 import { OTPSignIn } from "@/components/otp-sign-in";
-import { SlackSignIn } from "@/components/slack-sign-in";
-import { Cookies } from "@/utils/constants";
-import { isEU } from "@midday/location";
 import {
   Accordion,
   AccordionContent,
@@ -15,118 +9,13 @@ import {
 } from "@midday/ui/accordion";
 import { Icons } from "@midday/ui/icons";
 import type { Metadata } from "next";
-import { cookies, headers } from "next/headers";
 import Link from "next/link";
-import { userAgent } from "next/server";
 
 export const metadata: Metadata = {
   title: "Login | Midday",
 };
 
-export default async function Page(params) {
-  if (params?.searchParams?.return_to === "desktop/command") {
-    return <DesktopCommandMenuSignIn />;
-  }
-
-  const cookieStore = cookies();
-  const preferred = cookieStore.get(Cookies.PreferredSignInProvider);
-  const showTrackingConsent =
-    isEU() && !cookieStore.has(Cookies.TrackingConsent);
-  const { device } = userAgent({ headers: headers() });
-
-  let moreSignInOptions = null;
-  let preferredSignInOption =
-    device?.vendor === "Apple" ? (
-      <div className="flex flex-col space-y-2">
-        <GoogleSignIn />
-        <AppleSignIn />
-      </div>
-    ) : (
-      <GoogleSignIn />
-    );
-
-  switch (preferred?.value) {
-    case "apple":
-      preferredSignInOption = <AppleSignIn />;
-      moreSignInOptions = (
-        <>
-          <GoogleSignIn />
-          <SlackSignIn />
-          <GithubSignIn />
-          <OTPSignIn className="border-t-[1px] border-border pt-8" />
-        </>
-      );
-      break;
-
-    case "slack":
-      preferredSignInOption = <SlackSignIn />;
-      moreSignInOptions = (
-        <>
-          <GoogleSignIn />
-          <AppleSignIn />
-          <GithubSignIn />
-          <OTPSignIn className="border-t-[1px] border-border pt-8" />
-        </>
-      );
-      break;
-
-    case "github":
-      preferredSignInOption = <GithubSignIn />;
-      moreSignInOptions = (
-        <>
-          <GoogleSignIn />
-          <AppleSignIn />
-          <SlackSignIn />
-          <OTPSignIn className="border-t-[1px] border-border pt-8" />
-        </>
-      );
-      break;
-
-    case "google":
-      preferredSignInOption = <GoogleSignIn />;
-      moreSignInOptions = (
-        <>
-          <AppleSignIn />
-          <GithubSignIn />
-          <SlackSignIn />
-          <OTPSignIn className="border-t-[1px] border-border pt-8" />
-        </>
-      );
-      break;
-
-    case "otp":
-      preferredSignInOption = <OTPSignIn />;
-      moreSignInOptions = (
-        <>
-          <GoogleSignIn />
-          <AppleSignIn />
-          <GithubSignIn />
-          <SlackSignIn />
-        </>
-      );
-      break;
-
-    default:
-      if (device?.vendor === "Apple") {
-        moreSignInOptions = (
-          <>
-            <SlackSignIn />
-            <GithubSignIn />
-            <OTPSignIn className="border-t-[1px] border-border pt-8" />
-          </>
-        );
-      } else {
-        moreSignInOptions = (
-          <>
-            <AppleSignIn />
-            <SlackSignIn />
-            <GithubSignIn />
-            <OTPSignIn className="border-t-[1px] border-border pt-8" />
-          </>
-        );
-      }
-  }
-
+export default async function Page() {
   return (
     <div>
       <header className="w-full fixed left-0 right-0">
@@ -152,7 +41,7 @@ export default async function Page(params) {
             </p>
 
             <div className="pointer-events-auto mt-6 flex flex-col mb-6">
-              {preferredSignInOption}
+              <OTPSignIn />
 
               <Accordion
                 type="single"
@@ -165,7 +54,8 @@ export default async function Page(params) {
                   </AccordionTrigger>
                   <AccordionContent className="mt-4">
                     <div className="flex flex-col space-y-4">
-                      {moreSignInOptions}
+                      <GoogleSignIn />
+                      <AppleSignIn />
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -187,8 +77,6 @@ export default async function Page(params) {
           </div>
         </div>
       </div>
-
-      {showTrackingConsent && <ConsentBanner />}
     </div>
   );
 }

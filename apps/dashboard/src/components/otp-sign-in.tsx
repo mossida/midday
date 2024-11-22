@@ -12,6 +12,7 @@ import { Loader2 } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useMutation } from "react-query";
 import { z } from "zod";
 
 const formSchema = z.object({
@@ -24,9 +25,7 @@ type Props = {
 
 export function OTPSignIn({ className }: Props) {
   const verifyOtp = useAction(verifyOtpAction);
-  const [isLoading, setLoading] = useState(false);
-  const [isSent, setSent] = useState(false);
-  const [email, setEmail] = useState<string>();
+
   const supabase = createClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -36,16 +35,15 @@ export function OTPSignIn({ className }: Props) {
     },
   });
 
-  async function onSubmit({ email }: z.infer<typeof formSchema>) {
-    setLoading(true);
-
-    setEmail(email);
-
-    await supabase.auth.signInWithOtp({ email });
-
-    setSent(true);
-    setLoading(false);
-  }
+  const {
+    data: email,
+    mutate: onSubmit,
+    isLoading,
+    isSuccess,
+  } = useMutation({
+    mutationFn: ({ email }: z.infer<typeof formSchema>) =>
+      supabase.auth.signInWithOtp({ email }).then(() => email),
+  });
 
   async function onComplete(token: string) {
     if (!email) return;
@@ -56,7 +54,7 @@ export function OTPSignIn({ className }: Props) {
     });
   }
 
-  if (isSent) {
+  if (isSuccess) {
     return (
       <div className={cn("flex flex-col space-y-4 items-center", className)}>
         <InputOTP
@@ -82,7 +80,6 @@ export function OTPSignIn({ className }: Props) {
             Didn't receive the email?
           </span>
           <button
-            onClick={() => setSent(false)}
             type="button"
             className="text-sm text-primary underline font-medium"
           >
@@ -95,7 +92,7 @@ export function OTPSignIn({ className }: Props) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit((d) => onSubmit(d))}>
         <div className={cn("flex flex-col space-y-4", className)}>
           <FormField
             control={form.control}
